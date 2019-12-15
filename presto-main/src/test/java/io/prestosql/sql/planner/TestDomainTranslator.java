@@ -342,7 +342,7 @@ public class TestDomainTranslator
         assertEquals(toPredicate(tupleDomain), equal(C_BIGINT, bigintLiteral(1L)));
 
         tupleDomain = withColumnDomains(ImmutableMap.of(C_BIGINT, Domain.create(ValueSet.ofRanges(Range.equal(BIGINT, 1L), Range.equal(BIGINT, 2L)), false)));
-        assertEquals(toPredicate(tupleDomain), in(C_BIGINT, ImmutableList.of(1L, 2L)));
+        assertEquals(toPredicate(tupleDomain), between(C_BIGINT, bigintLiteral(1L), bigintLiteral(2L)));
 
         tupleDomain = withColumnDomains(ImmutableMap.of(C_BIGINT, Domain.create(ValueSet.ofRanges(Range.lessThan(BIGINT, 1L)), true)));
         assertEquals(toPredicate(tupleDomain), or(lessThan(C_BIGINT, bigintLiteral(1L)), isNull(C_BIGINT)));
