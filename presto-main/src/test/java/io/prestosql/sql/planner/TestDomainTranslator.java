@@ -226,7 +226,9 @@ public class TestDomainTranslator
                                 Range.equal(BIGINT, 1L), Range.equal(BIGINT, 2L), Range.equal(BIGINT, 3L))), false);
 
         TupleDomain<Symbol> tupleDomain = withColumnDomains(ImmutableMap.<Symbol, Domain>builder().put(C_BIGINT, testDomain).build());
-        assertEquals(toPredicate(tupleDomain), not(in(C_BIGINT, ImmutableList.of(1L, 2L, 3L))));
+        assertEquals(toPredicate(tupleDomain), or(
+                lessThan(C_BIGINT, bigintLiteral(1L)),
+                greaterThan(C_BIGINT, bigintLiteral(3L))));
 
         testDomain = Domain.create(
                 ValueSet.ofRanges(
@@ -235,7 +237,7 @@ public class TestDomainTranslator
                                 .subtract(ValueSet.ofRanges(Range.equal(BIGINT, 1L), Range.equal(BIGINT, 2L), Range.equal(BIGINT, 3L)))), false);
 
         tupleDomain = withColumnDomains(ImmutableMap.<Symbol, Domain>builder().put(C_BIGINT, testDomain).build());
-        assertEquals(toPredicate(tupleDomain), and(lessThan(C_BIGINT, bigintLiteral(4L)), not(in(C_BIGINT, ImmutableList.of(1L, 2L, 3L)))));
+        assertEquals(toPredicate(tupleDomain), lessThan(C_BIGINT, bigintLiteral(1L)));
 
         testDomain = Domain.create(ValueSet.ofRanges(
                 Range.range(BIGINT, 1L, true, 3L, true),
@@ -255,7 +257,9 @@ public class TestDomainTranslator
                         .union(ValueSet.ofRanges(Range.range(BIGINT, 7L, true, 9L, true))), false);
 
         tupleDomain = withColumnDomains(ImmutableMap.<Symbol, Domain>builder().put(C_BIGINT, testDomain).build());
-        assertEquals(toPredicate(tupleDomain), or(and(lessThan(C_BIGINT, bigintLiteral(4L)), not(in(C_BIGINT, ImmutableList.of(1L, 2L, 3L)))), between(C_BIGINT, bigintLiteral(7L), bigintLiteral(9L))));
+        assertEquals(toPredicate(tupleDomain), or(
+                lessThan(C_BIGINT, bigintLiteral(1L)),
+                between(C_BIGINT, bigintLiteral(7L), bigintLiteral(9L))));
 
         testDomain = Domain.create(
                 ValueSet.ofRanges(Range.lessThan(BIGINT, 4L))
@@ -265,7 +269,7 @@ public class TestDomainTranslator
 
         tupleDomain = withColumnDomains(ImmutableMap.<Symbol, Domain>builder().put(C_BIGINT, testDomain).build());
         assertEquals(toPredicate(tupleDomain), or(
-                and(lessThan(C_BIGINT, bigintLiteral(4L)), not(in(C_BIGINT, ImmutableList.of(1L, 2L, 3L)))),
+                lessThan(C_BIGINT, bigintLiteral(1L)),
                 and(greaterThan(C_BIGINT, bigintLiteral(7L)), lessThan(C_BIGINT, bigintLiteral(9L))),
                 and(greaterThan(C_BIGINT, bigintLiteral(11L)), lessThan(C_BIGINT, bigintLiteral(13L)))));
     }
@@ -370,15 +374,18 @@ public class TestDomainTranslator
                         Range.range(BIGINT, 0L, false, 1L, false),
                         Range.greaterThan(BIGINT, 1L)),
                 false)));
-        assertEquals(toPredicate(tupleDomain), not(in(C_BIGINT, ImmutableList.of(0L, 1L))));
+        assertEquals(toPredicate(tupleDomain), or(
+                lessThan(C_BIGINT, bigintLiteral(0)),
+                greaterThan(C_BIGINT, bigintLiteral(1))));
 
         tupleDomain = withColumnDomains(ImmutableMap.of(C_BIGINT, Domain.create(
                 ValueSet.ofRanges(
                         Range.lessThan(BIGINT, 0L),
-                        Range.range(BIGINT, 0L, false, 1L, false),
                         Range.greaterThan(BIGINT, 2L)),
                 false)));
-        assertEquals(toPredicate(tupleDomain), or(and(lessThan(C_BIGINT, bigintLiteral(1L)), notEqual(C_BIGINT, bigintLiteral(0L))), greaterThan(C_BIGINT, bigintLiteral(2L))));
+        assertEquals(toPredicate(tupleDomain), or(
+                lessThan(C_BIGINT, bigintLiteral(0L)),
+                greaterThan(C_BIGINT, bigintLiteral(2L))));
 
         // floating point types: do not coalesce ranges when range "all" would be introduced
         tupleDomain = withColumnDomains(ImmutableMap.of(C_REAL, Domain.create(ValueSet.ofRanges(Range.greaterThan(REAL, 0L), Range.lessThan(REAL, 0L)), false)));

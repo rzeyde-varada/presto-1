@@ -55,6 +55,25 @@ public class TestSortedRangeSet
     }
 
     @Test
+    public void testSkipEmptyRange()
+    {
+        SortedRangeSet rangeSet1 = SortedRangeSet.of(Range.greaterThan(BIGINT, 1L));
+        SortedRangeSet rangeSet2 = SortedRangeSet.of(Range.lessThan(BIGINT, 2L));
+        SortedRangeSet rangeSet = rangeSet1.intersect(rangeSet2);
+
+        assertEquals(rangeSet.getType(), BIGINT);
+        assertTrue(rangeSet.isNone());
+        assertFalse(rangeSet.isAll());
+        assertFalse(rangeSet.isSingleValue());
+        assertTrue(Iterables.isEmpty(rangeSet.getOrderedRanges()));
+        assertEquals(rangeSet.getRangeCount(), 0);
+        assertEquals(rangeSet.complement(), SortedRangeSet.all(BIGINT));
+        assertFalse(rangeSet.includesMarker(Marker.lowerUnbounded(BIGINT)));
+        assertFalse(rangeSet.includesMarker(Marker.exactly(BIGINT, 0L)));
+        assertFalse(rangeSet.includesMarker(Marker.upperUnbounded(BIGINT)));
+    }
+
+    @Test
     public void testEntireSet()
     {
         SortedRangeSet rangeSet = SortedRangeSet.all(BIGINT);
@@ -140,11 +159,11 @@ public class TestSortedRangeSet
 
         ImmutableList<Range> normalizedResult = ImmutableList.of(
                 Range.lessThanOrEqual(BIGINT, 0L),
-                Range.range(BIGINT, 1L, false, 6L, false),
+                Range.range(BIGINT, 2L, true, 6L, false),
                 Range.greaterThan(BIGINT, 9L));
 
         SortedRangeSet complement = SortedRangeSet.of(
-                Range.range(BIGINT, 0L, false, 1L, true),
+                Range.range(BIGINT, 0L, false, 2L, false),
                 Range.range(BIGINT, 6L, true, 9L, true));
 
         assertEquals(rangeSet.getType(), BIGINT);
